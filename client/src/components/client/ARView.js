@@ -25,11 +25,16 @@ function ARView() {
   const overlayVideoRef = useRef(null);
 
   useEffect(() => {
+    console.log('ARView mounted, fetching targets...');
     fetchTargets();
     return () => {
       stopAR();
     };
   }, []);
+
+  useEffect(() => {
+    console.log('State changed:', { isLoading, targetsCount: targets.length, error });
+  }, [isLoading, targets, error]);
 
   const updateLoadingStep = (stepId, status, errorMsg = null) => {
     setLoadingSteps(prev => prev.map(step => 
@@ -71,9 +76,11 @@ function ARView() {
       // Step 4: Ready
       updateLoadingStep(4, 'success');
       
+      // Give user a moment to see all checks passed
       setTimeout(() => {
+        console.log('Loading complete, transitioning to AR view...');
         setIsLoading(false);
-      }, 500);
+      }, 800);
       
     } catch (error) {
       console.error('Error fetching targets:', error);
@@ -202,6 +209,8 @@ function ARView() {
     setDetectedTarget(null);
   };
 
+  console.log('Rendering ARView, isLoading:', isLoading);
+
   if (isLoading) {
     return (
       <div className="ar-view">
@@ -224,7 +233,7 @@ function ARView() {
               </div>
             ))}
           </div>
-          {error && (
+          {error && loadingSteps.some(step => step.status === 'error') && (
             <div className="loading-error">
               <p>{error}</p>
               <button className="btn btn-secondary" onClick={() => window.location.reload()}>
@@ -236,6 +245,8 @@ function ARView() {
       </div>
     );
   }
+
+  console.log('Loading complete, showing AR view with', targets.length, 'targets');
 
   return (
     <div className="ar-view">
