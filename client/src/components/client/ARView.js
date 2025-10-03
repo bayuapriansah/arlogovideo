@@ -24,20 +24,20 @@ function ARView() {
   const animationRef = useRef(null);
   const overlayVideoRef = useRef(null);
 
+  const hasInitialized = useRef(false);
+
   useEffect(() => {
-    console.log('ARView mounted, fetching targets...');
-    let isMounted = true;
-    
-    const loadTargets = async () => {
-      await fetchTargets();
-    };
-    
-    if (isMounted) {
-      loadTargets();
+    if (hasInitialized.current) {
+      console.log('Already initialized, skipping...');
+      return;
     }
     
+    hasInitialized.current = true;
+    console.log('ARView mounted, fetching targets...');
+    
+    fetchTargets();
+    
     return () => {
-      isMounted = false;
       stopAR();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
