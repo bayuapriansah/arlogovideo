@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './components/client/LandingPage';
-import ARView from './components/client/ARView';
+import ARViewReal from './components/client/ARViewReal';
 import AdminLogin from './components/admin/AdminLogin';
 import AdminDashboard from './components/admin/AdminDashboard';
 import ProtectedRoute from './components/admin/ProtectedRoute';
@@ -14,7 +14,7 @@ function App() {
         <Routes>
           {/* Client Routes */}
           <Route path="/" element={<LandingPage />} />
-          <Route path="/ar" element={<ARView />} />
+          <Route path="/ar" element={<ARViewReal />} />
           
           {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
