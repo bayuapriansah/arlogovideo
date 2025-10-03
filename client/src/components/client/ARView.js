@@ -11,6 +11,12 @@ function ARView() {
   const [cameraPermission, setCameraPermission] = useState(false);
   const [detectedTarget, setDetectedTarget] = useState(null);
   const [showInstructions, setShowInstructions] = useState(true);
+  const [loadingSteps, setLoadingSteps] = useState([
+    { id: 1, text: 'Connecting to server...', status: 'pending' },
+    { id: 2, text: 'Loading AR targets...', status: 'pending' },
+    { id: 3, text: 'Checking browser compatibility...', status: 'pending' },
+    { id: 4, text: 'Ready!', status: 'pending' }
+  ]);
   
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -25,16 +31,64 @@ function ARView() {
     };
   }, []);
 
+  const updateLoadingStep = (stepId, status, errorMsg = null) => {
+    setLoadingSteps(prev => prev.map(step => 
+      step.id === stepId ? { ...step, status, error: errorMsg } : step
+    ));
+  };
+
   const fetchTargets = async () => {
     try {
+      // Step 1: Connecting to server
+      updateLoadingStep(1, 'loading');
       console.log('Fetching targets from:', `${config.API_URL}/targets`);
+      
       const response = await axios.get(`${config.API_URL}/targets`);
+      updateLoadingStep(1, 'success');
+      
+      // Step 2: Loading AR targets
+      updateLoadingStep(2, 'loading');
       console.log('Targets loaded:', response.data);
       setTargets(response.data);
-      setIsLoading(false);
+      
+      if (response.data.length === 0) {
+        updateLoadingStep(2, 'warning');
+        setError('No AR targets found. Please contact admin to add AR content.');
+      } else {
+        updateLoadingStep(2, 'success');
+      }
+      
+      // Step 3: Checking browser compatibility
+      updateLoadingStep(3, 'loading');
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        updateLoadingStep(3, 'error');
+        setError('Camera is not supported on this browser. Please use Chrome or Safari.');
+        setIsLoading(false);
+        return;
+      }
+      updateLoadingStep(3, 'success');
+      
+      // Step 4: Ready
+      updateLoadingStep(4, 'success');
+      
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
+      
     } catch (error) {
       console.error('Error fetching targets:', error);
-      setError('Failed to load AR targets');
+      
+      if (error.response) {
+        updateLoadingStep(1, 'error');
+        setError(`Server error: ${error.response.status} - ${error.response.statusText}`);
+      } else if (error.request) {
+        updateLoadingStep(1, 'error');
+        setError('Cannot connect to server. Please check your internet connection.');
+      } else {
+        updateLoadingStep(2, 'error');
+        setError('Failed to load AR targets: ' + error.message);
+      }
+      
       setIsLoading(false);
     }
   };
@@ -152,8 +206,32 @@ function ARView() {
     return (
       <div className="ar-view">
         <div className="ar-loading">
-          <div className="spinner"></div>
-          <p>Loading AR Experience...</p>
+          <h2>🚀 Initializing AR Experience</h2>
+          <div className="loading-steps">
+            {loadingSteps.map(step => (
+              <div key={step.id} className={`loading-step ${step.status}`}>
+                <div className="step-icon">
+                  {step.status === 'pending' && '⏳'}
+                  {step.status === 'loading' && <div className="spinner-small"></div>}
+                  {step.status === 'success' && '✅'}
+                  {step.status === 'error' && '❌'}
+                  {step.status === 'warning' && '⚠️'}
+                </div>
+                <div className="step-text">
+                  <span>{step.text}</span>
+                  {step.error && <small className="step-error">{step.error}</small>}
+                </div>
+              </div>
+            ))}
+          </div>
+          {error && (
+            <div className="loading-error">
+              <p>{error}</p>
+              <button className="btn btn-secondary" onClick={() => window.location.reload()}>
+                Retry
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );

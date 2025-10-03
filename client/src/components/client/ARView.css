@@ -14,7 +14,100 @@
   justify-content: center;
   height: 100vh;
   color: white;
-  gap: 20px;
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.ar-loading h2 {
+  font-size: 1.8rem;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.loading-steps {
+  width: 100%;
+  background: rgba(0,0,0,0.5);
+  border-radius: 15px;
+  padding: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.loading-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  background: rgba(255,255,255,0.05);
+}
+
+.loading-step.loading {
+  background: rgba(102,126,234,0.2);
+  animation: pulse 2s infinite;
+}
+
+.loading-step.success {
+  background: rgba(76,175,80,0.2);
+}
+
+.loading-step.error {
+  background: rgba(244,67,54,0.2);
+}
+
+.loading-step.warning {
+  background: rgba(255,152,0,0.2);
+}
+
+.step-icon {
+  font-size: 1.5rem;
+  min-width: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner-small {
+  border: 3px solid rgba(255,255,255,0.3);
+  border-top: 3px solid white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
+
+.step-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.step-text span {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.step-error {
+  color: #ff8a80;
+  font-size: 0.85rem;
+  margin-top: 5px;
+}
+
+.loading-error {
+  margin-top: 20px;
+  text-align: center;
+  background: rgba(244,67,54,0.2);
+  padding: 20px;
+  border-radius: 10px;
+  width: 100%;
+}
+
+.loading-error p {
+  margin-bottom: 15px;
+  font-size: 1rem;
 }
 
 .ar-loading p {
