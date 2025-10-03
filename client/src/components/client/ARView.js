@@ -123,17 +123,19 @@ function ARView() {
 
   const startAR = async () => {
     try {
-      console.log('startAR called!');
+      console.log('startAR called! Requesting camera...');
       setIsCameraLoading(true);
       setError('');
 
       // Check if mediaDevices is supported
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        console.error('getUserMedia not supported');
         setError('Camera is not supported on this browser. Please use a modern browser like Chrome or Safari.');
         setIsCameraLoading(false);
         return;
       }
 
+      console.log('Requesting camera stream...');
       // Get camera stream directly
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
@@ -144,30 +146,50 @@ function ARView() {
         audio: false
       });
 
+      console.log('Camera stream obtained!', stream);
       streamRef.current = stream;
       
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        setCameraPermission(true);
-        
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current.play().then(() => {
-            if (canvasRef.current) {
-              const canvas = canvasRef.current;
-              canvas.width = videoRef.current.videoWidth;
-              canvas.height = videoRef.current.videoHeight;
-            }
-            setArStarted(true);
-            setIsCameraLoading(false);
-            setShowInstructions(false);
-            startImageDetection();
-          }).catch(err => {
-            console.error('Error playing video:', err);
-            setError('Failed to start video. Please try again.');
-            setIsCameraLoading(false);
-          });
-        };
+      if (!videoRef.current) {
+        console.error('Video ref is null!');
+        setError('Video element not ready. Please try again.');
+        setIsCameraLoading(false);
+        return;
       }
+      
+      console.log('Setting video source...');
+      videoRef.current.srcObject = stream;
+      setCameraPermission(true);
+      
+      videoRef.current.onloadedmetadata = () => {
+        console.log('Video metadata loaded, playing...');
+        videoRef.current.play().then(() => {
+          console.log('Video playing!');
+          if (canvasRef.current) {
+            const canvas = canvasRef.current;
+            canvas.width = videoRef.current.videoWidth;
+            canvas.height = videoRef.current.videoHeight;
+            console.log('Canvas size set:', canvas.width, 'x', canvas.height);
+          }
+          setArStarted(true);
+          setIsCameraLoading(false);
+          setShowInstructions(false);
+          startImageDetection();
+          console.log('AR started successfully!');
+        }).catch(err => {
+          console.error('Error playing video:', err);
+          setError('Failed to start video. Please try again.');
+          setIsCameraLoading(false);
+        });
+      };
+      
+      // Fallback: If onloadedmetadata doesn't fire within 5 seconds
+      setTimeout(() => {
+        if (isCameraLoading && !arStarted) {
+          console.error('Timeout: Video did not load within 5 seconds');
+          setError('Camera loading timeout. Please try again.');
+          setIsCameraLoading(false);
+        }
+      }, 5000);
 
     } catch (error) {
       console.error('Error starting AR:', error);
