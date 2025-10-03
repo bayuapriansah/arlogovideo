@@ -41,10 +41,11 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 echo -e "${GREEN}[1/10] Updating system packages...${NC}"
+add-apt-repository universe -y 2>/dev/null || true
 apt update && apt upgrade -y
 
 echo -e "${GREEN}[2/10] Installing required packages...${NC}"
-apt install -y curl wget git build-essential nginx certbot python3-certbot-nginx
+apt install -y curl wget git nginx snapd
 
 echo -e "${GREEN}[3/10] Installing Node.js 18.x...${NC}"
 curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
@@ -183,6 +184,12 @@ rm -f /etc/nginx/sites-enabled/default
 
 # Test nginx configuration
 nginx -t
+
+echo -e "${GREEN}Installing Certbot via Snap...${NC}"
+snap install core
+snap refresh core
+snap install --classic certbot
+ln -sf /snap/bin/certbot /usr/bin/certbot
 
 echo -e "${GREEN}Setting up SSL certificate...${NC}"
 echo -e "${YELLOW}Note: Make sure your domain zerobyte.web.id points to ${SERVER_IP}${NC}"

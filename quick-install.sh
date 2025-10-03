@@ -32,6 +32,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 echo -e "${GREEN}[1/8] Installing system packages...${NC}"
+add-apt-repository universe -y 2>/dev/null || true
 apt update
 apt install -y curl git nginx mysql-server
 
