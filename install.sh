@@ -52,7 +52,19 @@ curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
 apt install -y nodejs
 
 echo -e "${GREEN}[4/10] Installing MySQL Server...${NC}"
-apt install -y mysql-server
+# Fix broken packages first
+apt --fix-broken install -y
+dpkg --configure -a
+
+# Install MySQL
+apt install -y mysql-server mysql-client || {
+    echo -e "${YELLOW}Standard MySQL installation failed, trying alternative method...${NC}"
+    apt purge -y mysql-server mysql-client mysql-common mysql-server-core-* mysql-client-core-*
+    apt autoremove -y
+    apt autoclean
+    apt update
+    apt install -y mysql-server mysql-client
+}
 
 # Secure MySQL installation
 echo -e "${GREEN}[5/10] Configuring MySQL...${NC}"

@@ -41,7 +41,14 @@ curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
 apt install -y nodejs
 
 echo -e "${GREEN}[3/8] Setting up MySQL...${NC}"
-mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'RootPass@123';"
+# Fix broken packages
+apt --fix-broken install -y
+dpkg --configure -a
+
+# Configure MySQL
+systemctl start mysql 2>/dev/null || true
+sleep 2
+mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'RootPass@123';" 2>/dev/null || mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'RootPass@123';"
 mysql -u root -pRootPass@123 << EOF
 CREATE DATABASE IF NOT EXISTS ${DB_NAME};
 CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
