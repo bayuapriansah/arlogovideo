@@ -26,15 +26,26 @@ function ARView() {
 
   useEffect(() => {
     console.log('ARView mounted, fetching targets...');
-    fetchTargets();
+    let isMounted = true;
+    
+    const loadTargets = async () => {
+      await fetchTargets();
+    };
+    
+    if (isMounted) {
+      loadTargets();
+    }
+    
     return () => {
+      isMounted = false;
       stopAR();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     console.log('State changed:', { isLoading, targetsCount: targets.length, error });
-  }, [isLoading, targets, error]);
+  }, [isLoading, targets.length, error]);
 
   const updateLoadingStep = (stepId, status, errorMsg = null) => {
     setLoadingSteps(prev => prev.map(step => 
