@@ -35,7 +35,7 @@ function ARViewReal() {
     // Create A-Frame scene dynamically
     const sceneHTML = `
       <a-scene
-        mindar-image="imageTargetSrc: ${config.BASE_URL}/api/mind-targets; autoStart: true; uiScanning: no; uiLoading: no;"
+        mindar-image="imageTargetSrc: ${config.BASE_URL}/api/ar/mind-targets; autoStart: true; uiScanning: no; uiLoading: no;"
         color-space="sRGB"
         renderer="colorManagement: true, physicallyCorrectLights"
         vr-mode-ui="enabled: false"
