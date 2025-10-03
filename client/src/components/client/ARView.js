@@ -27,7 +27,9 @@ function ARView() {
 
   const fetchTargets = async () => {
     try {
+      console.log('Fetching targets from:', `${config.API_URL}/targets`);
       const response = await axios.get(`${config.API_URL}/targets`);
+      console.log('Targets loaded:', response.data);
       setTargets(response.data);
       setIsLoading(false);
     } catch (error) {
@@ -146,7 +148,7 @@ function ARView() {
     setDetectedTarget(null);
   };
 
-  if (isLoading && !arStarted) {
+  if (isLoading) {
     return (
       <div className="ar-view">
         <div className="ar-loading">
