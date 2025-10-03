@@ -51,24 +51,22 @@ echo -e "${GREEN}[3/10] Installing Node.js 18.x...${NC}"
 curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
 apt install -y nodejs
 
-echo -e "${GREEN}[4/10] Installing MySQL Server...${NC}"
-# Fix broken packages first
-apt --fix-broken install -y
-dpkg --configure -a
+echo -e "${GREEN}[4/10] Removing MySQL and Installing MariaDB...${NC}"
+# Remove MySQL if installed
+apt purge -y mysql-server mysql-client mysql-common mysql-server-core-* mysql-client-core-* 2>/dev/null || true
+apt autoremove -y
+apt autoclean
 
-# Install MySQL
-apt install -y mysql-server mysql-client || {
-    echo -e "${YELLOW}Standard MySQL installation failed, trying alternative method...${NC}"
-    apt purge -y mysql-server mysql-client mysql-common mysql-server-core-* mysql-client-core-*
-    apt autoremove -y
-    apt autoclean
-    apt update
-    apt install -y mysql-server mysql-client
-}
+# Install MariaDB
+apt install -y mariadb-server mariadb-client
 
-# Secure MySQL installation
-echo -e "${GREEN}[5/10] Configuring MySQL...${NC}"
-mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'RootPass@123';"
+# Start MariaDB
+systemctl start mariadb
+systemctl enable mariadb
+
+# Secure MariaDB installation
+echo -e "${GREEN}[5/10] Configuring MariaDB...${NC}"
+mysql -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('RootPass@123');"
 mysql -u root -pRootPass@123 -e "DELETE FROM mysql.user WHERE User='';"
 mysql -u root -pRootPass@123 -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');"
 mysql -u root -pRootPass@123 -e "DROP DATABASE IF EXISTS test;"
@@ -250,7 +248,7 @@ echo -e "Password: ${YELLOW}${ADMIN_PASSWORD}${NC}"
 echo -e "${RED}⚠️  CHANGE PASSWORD AFTER FIRST LOGIN!${NC}"
 echo ""
 echo -e "${GREEN}=== Database Information ===${NC}"
-echo -e "MySQL Root Password: ${YELLOW}RootPass@123${NC}"
+echo -e "MariaDB Root Password: ${YELLOW}RootPass@123${NC}"
 echo -e "Database Name: ${YELLOW}${DB_NAME}${NC}"
 echo -e "Database User: ${YELLOW}${DB_USER}${NC}"
 echo -e "Database Password: ${YELLOW}${DB_PASSWORD}${NC}"
@@ -285,7 +283,7 @@ Password: ${ADMIN_PASSWORD}
 
 Database Information:
 --------------------
-MySQL Root Password: RootPass@123
+MariaDB Root Password: RootPass@123
 Database Name: ${DB_NAME}
 Database User: ${DB_USER}
 Database Password: ${DB_PASSWORD}

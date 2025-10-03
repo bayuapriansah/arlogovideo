@@ -34,21 +34,26 @@ fi
 echo -e "${GREEN}[1/8] Installing system packages...${NC}"
 add-apt-repository universe -y 2>/dev/null || true
 apt update
-apt install -y curl git nginx mysql-server
+
+# Remove MySQL if exists
+apt purge -y mysql-server mysql-client mysql-common 2>/dev/null || true
+apt autoremove -y
+
+# Install packages with MariaDB
+apt install -y curl git nginx mariadb-server mariadb-client
 
 echo -e "${GREEN}[2/8] Installing Node.js...${NC}"
 curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
 apt install -y nodejs
 
-echo -e "${GREEN}[3/8] Setting up MySQL...${NC}"
-# Fix broken packages
-apt --fix-broken install -y
-dpkg --configure -a
-
-# Configure MySQL
-systemctl start mysql 2>/dev/null || true
+echo -e "${GREEN}[3/8] Setting up MariaDB...${NC}"
+# Start MariaDB
+systemctl start mariadb
+systemctl enable mariadb
 sleep 2
-mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'RootPass@123';" 2>/dev/null || mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'RootPass@123';"
+
+# Configure MariaDB
+mysql -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('RootPass@123');"
 mysql -u root -pRootPass@123 << EOF
 CREATE DATABASE IF NOT EXISTS ${DB_NAME};
 CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
