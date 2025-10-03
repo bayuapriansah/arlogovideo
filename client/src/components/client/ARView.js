@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import config from '../../config';
-import { isMobileOrTablet, requestCameraPermission } from '../../utils/deviceDetection';
 import './ARView.css';
 
 function ARView() {
@@ -39,51 +38,69 @@ function ARView() {
   };
 
   const startAR = async () => {
-    if (!isMobileOrTablet()) {
-      setError('Please use a mobile or tablet device for the best AR experience');
-      return;
-    }
-
     try {
       setIsLoading(true);
       setError('');
 
-      // Request camera permission
-      const hasPermission = await requestCameraPermission();
-      if (!hasPermission) {
-        setError('Camera permission is required for AR experience');
+      // Check if mediaDevices is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setError('Camera is not supported on this browser. Please use a modern browser like Chrome or Safari.');
         setIsLoading(false);
         return;
       }
 
-      setCameraPermission(true);
-
-      // Get camera stream
+      // Get camera stream directly
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: 'environment',
+          facingMode: { ideal: 'environment' },
           width: { ideal: 1280 },
           height: { ideal: 720 }
-        }
+        },
+        audio: false
       });
 
       streamRef.current = stream;
-      videoRef.current.srcObject = stream;
-      videoRef.current.play();
-
-      videoRef.current.onloadedmetadata = () => {
-        const canvas = canvasRef.current;
-        canvas.width = videoRef.current.videoWidth;
-        canvas.height = videoRef.current.videoHeight;
-        setArStarted(true);
-        setIsLoading(false);
-        setShowInstructions(false);
-        startImageDetection();
-      };
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        setCameraPermission(true);
+        
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current.play().then(() => {
+            if (canvasRef.current) {
+              const canvas = canvasRef.current;
+              canvas.width = videoRef.current.videoWidth;
+              canvas.height = videoRef.current.videoHeight;
+            }
+            setArStarted(true);
+            setIsLoading(false);
+            setShowInstructions(false);
+            startImageDetection();
+          }).catch(err => {
+            console.error('Error playing video:', err);
+            setError('Failed to start video. Please try again.');
+            setIsLoading(false);
+          });
+        };
+      }
 
     } catch (error) {
       console.error('Error starting AR:', error);
-      setError('Failed to access camera. Please ensure camera permissions are granted.');
+      let errorMessage = 'Failed to access camera. ';
+      
+      if (error.name === 'NotAllowedError') {
+        errorMessage = 'Camera permission denied. Please allow camera access and try again.';
+      } else if (error.name === 'NotFoundError') {
+        errorMessage = 'No camera found on this device.';
+      } else if (error.name === 'NotReadableError') {
+        errorMessage = 'Camera is already in use by another application.';
+      } else if (error.name === 'OverconstrainedError') {
+        errorMessage = 'Camera does not support the required settings.';
+      } else {
+        errorMessage += error.message || 'Please ensure camera permissions are granted.';
+      }
+      
+      setError(errorMessage);
       setIsLoading(false);
     }
   };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { isMobileOrTablet, isARSupported } from '../../utils/deviceDetection';
+import { isMobileOrTablet } from '../../utils/deviceDetection';
 import './LandingPage.css';
 
 function LandingPage() {
