@@ -58,7 +58,7 @@ apt autoremove -y
 apt autoclean
 
 # Install MariaDB
-apt install -y mariadb-server mariadb-client
+apt install -y mariadb-server
 
 # Start MariaDB
 systemctl start mariadb
@@ -131,28 +131,11 @@ cd client
 npm run build
 cd ..
 
-echo -e "${GREEN}Setting up Nginx...${NC}"
+echo -e "${GREEN}Setting up Nginx (HTTP first)...${NC}"
 cat > /etc/nginx/sites-available/arlogovideo << 'EOF'
 server {
     listen 80;
     server_name zerobyte.web.id www.zerobyte.web.id;
-
-    # Redirect HTTP to HTTPS
-    return 301 https://$server_name$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    server_name zerobyte.web.id www.zerobyte.web.id;
-
-    # SSL Configuration (will be managed by Certbot)
-    ssl_certificate /etc/letsencrypt/live/zerobyte.web.id/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/zerobyte.web.id/privkey.pem;
-
-    # Security headers
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
 
     # Root directory for React build
     root /var/www/arlogovideo/client/build;
@@ -194,6 +177,7 @@ rm -f /etc/nginx/sites-enabled/default
 
 # Test nginx configuration
 nginx -t
+systemctl reload nginx
 
 echo -e "${GREEN}Installing Certbot via Snap...${NC}"
 snap install core
