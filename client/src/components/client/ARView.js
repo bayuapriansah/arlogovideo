@@ -6,6 +6,7 @@ import './ARView.css';
 function ARView() {
   const [targets, setTargets] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCameraLoading, setIsCameraLoading] = useState(false);
   const [error, setError] = useState('');
   const [arStarted, setArStarted] = useState(false);
   const [cameraPermission, setCameraPermission] = useState(false);
@@ -123,13 +124,13 @@ function ARView() {
   const startAR = async () => {
     try {
       console.log('startAR called!');
-      setIsLoading(true);
+      setIsCameraLoading(true);
       setError('');
 
       // Check if mediaDevices is supported
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         setError('Camera is not supported on this browser. Please use a modern browser like Chrome or Safari.');
-        setIsLoading(false);
+        setIsCameraLoading(false);
         return;
       }
 
@@ -157,13 +158,13 @@ function ARView() {
               canvas.height = videoRef.current.videoHeight;
             }
             setArStarted(true);
-            setIsLoading(false);
+            setIsCameraLoading(false);
             setShowInstructions(false);
             startImageDetection();
           }).catch(err => {
             console.error('Error playing video:', err);
             setError('Failed to start video. Please try again.');
-            setIsLoading(false);
+            setIsCameraLoading(false);
           });
         };
       }
@@ -185,7 +186,7 @@ function ARView() {
       }
       
       setError(errorMessage);
-      setIsLoading(false);
+      setIsCameraLoading(false);
     }
   };
 
@@ -300,8 +301,12 @@ function ARView() {
             {error && <div className="alert alert-error">{error}</div>}
             
             <div className="ar-actions">
-              <button className="btn btn-primary btn-large" onClick={startAR}>
-                Start AR Camera
+              <button 
+                className="btn btn-primary btn-large" 
+                onClick={startAR}
+                disabled={isCameraLoading}
+              >
+                {isCameraLoading ? 'Starting Camera...' : 'Start AR Camera'}
               </button>
               <a href="/" className="btn btn-secondary">Back to Home</a>
             </div>
