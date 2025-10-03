@@ -294,6 +294,17 @@ function ARView() {
 
   return (
     <div className="ar-view">
+      {/* Always render video and canvas elements (hidden when not started) */}
+      <video 
+        ref={videoRef} 
+        className="ar-camera" 
+        playsInline 
+        autoPlay 
+        muted
+        style={{ display: arStarted ? 'block' : 'none' }}
+      ></video>
+      <canvas ref={canvasRef} className="ar-canvas" style={{ display: 'none' }}></canvas>
+
       {/* AR Camera View */}
       {!arStarted ? (
         <div className="ar-welcome">
@@ -336,9 +347,6 @@ function ARView() {
         </div>
       ) : (
         <>
-          {/* Camera Feed */}
-          <video ref={videoRef} className="ar-camera" playsInline autoPlay muted></video>
-          <canvas ref={canvasRef} className="ar-canvas" style={{ display: 'none' }}></canvas>
 
           {/* AR Overlay */}
           <div className="ar-overlay">
