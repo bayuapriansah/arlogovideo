@@ -59,12 +59,16 @@ function ARView() {
       if (response.data.length === 0) {
         updateLoadingStep(2, 'warning');
         setError('No AR targets found. Please contact admin to add AR content.');
+        setIsLoading(false);
+        return;
       } else {
         updateLoadingStep(2, 'success');
       }
       
       // Step 3: Checking browser compatibility
       updateLoadingStep(3, 'loading');
+      await new Promise(resolve => setTimeout(resolve, 200)); // Small delay for visual feedback
+      
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         updateLoadingStep(3, 'error');
         setError('Camera is not supported on this browser. Please use Chrome or Safari.');
@@ -74,13 +78,13 @@ function ARView() {
       updateLoadingStep(3, 'success');
       
       // Step 4: Ready
+      await new Promise(resolve => setTimeout(resolve, 200)); // Small delay for visual feedback
       updateLoadingStep(4, 'success');
       
-      // Give user a moment to see all checks passed
-      setTimeout(() => {
-        console.log('Loading complete, transitioning to AR view...');
-        setIsLoading(false);
-      }, 800);
+      // Give user a moment to see all checks passed, then transition
+      await new Promise(resolve => setTimeout(resolve, 600));
+      console.log('Loading complete, transitioning to AR view...');
+      setIsLoading(false);
       
     } catch (error) {
       console.error('Error fetching targets:', error);
