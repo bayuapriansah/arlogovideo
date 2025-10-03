@@ -5,6 +5,7 @@ const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const { pool } = require('../config/db');
 const authMiddleware = require('../middleware/auth');
+const markerCompiler = require('../utils/autoCompiler');
 const router = express.Router();
 
 // Create uploads directory if it doesn't exist
@@ -106,8 +107,19 @@ router.post('/', authMiddleware, upload.fields([
       [name, imagePath, videoPath, description || '']
     );
 
+    const targetId = result.insertId;
+
+    // Auto-compile marker for AR
+    try {
+      await markerCompiler.compileImage(imagePath, targetId);
+      console.log(`Auto-compiled marker for target ${targetId}`);
+    } catch (compileError) {
+      console.error('Marker compilation failed:', compileError);
+      // Don't fail the upload, just log the error
+    }
+
     res.status(201).json({
-      id: result.insertId,
+      id: targetId,
       name,
       image_path: imagePath,
       video_path: videoPath,
@@ -191,6 +203,13 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     }
     if (fs.existsSync(videoPath)) {
       fs.unlinkSync(videoPath);
+    }
+
+    // Delete marker file
+    try {
+      await markerCompiler.deleteMarker(req.params.id);
+    } catch (error) {
+      console.error('Error deleting marker:', error);
     }
 
     // Delete from database
