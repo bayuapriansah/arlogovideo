@@ -95,7 +95,12 @@ function ARView() {
       // Give user a moment to see all checks passed, then transition
       await new Promise(resolve => setTimeout(resolve, 600));
       console.log('Loading complete, transitioning to AR view...');
-      setIsLoading(false);
+      
+      // Use callback form to ensure we're setting based on current state
+      setIsLoading(prev => {
+        console.log('setIsLoading called with prev:', prev, 'setting to false');
+        return false;
+      });
       
     } catch (error) {
       console.error('Error fetching targets:', error);
@@ -117,6 +122,7 @@ function ARView() {
 
   const startAR = async () => {
     try {
+      console.log('startAR called!');
       setIsLoading(true);
       setError('');
 
